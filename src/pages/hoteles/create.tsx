@@ -1,0 +1,114 @@
+import React, { useState } from "react";
+import { IResourceComponentsProps, useApiUrl } from "@pankod/refine-core";
+
+import {
+	Create,
+	Form,
+	Input,
+	Select,
+	useForm,
+	useSelect,
+	Upload,
+	Radio,
+} from "@pankod/refine-antd";
+
+import MDEditor from "@uiw/react-md-editor";
+
+import {
+	useStrapiUpload,
+	mediaUploadMapper,
+	getValueProps,
+} from "@pankod/refine-strapi-v4";
+
+import { TOKEN_KEY } from "../../constants";
+import { IHotel } from "../../interfaces";
+
+export const HotelCreate: React.FC<IResourceComponentsProps> = () => {
+	const API_URL = useApiUrl();
+	const [locale, setLocale] = useState("en");
+
+	const { formProps, saveButtonProps } = useForm<IHotel>();
+
+	const { selectProps } = useSelect({
+		resource: "categories",
+		metaData: { locale },
+	});
+
+	const { ...uploadProps } = useStrapiUpload({
+		maxCount: 1,
+	});
+
+	return (
+		<Create saveButtonProps={saveButtonProps}>
+			<Form
+				{...formProps}
+				layout='vertical'
+				onFinish={(values) => {
+					return (
+						formProps.onFinish &&
+						formProps.onFinish(mediaUploadMapper(values))
+					);
+				}}>
+				<Form.Item label='Locale' name='locale'>
+					<Radio.Group onChange={(e) => setLocale(e.target.value)}>
+						<Radio.Button value='en'>English</Radio.Button>
+						<Radio.Button value='de'>Deutsch</Radio.Button>
+					</Radio.Group>
+				</Form.Item>
+				<Form.Item
+					label='Denominación'
+					name='denominacion'
+					rules={[
+						{
+							required: true,
+						},
+					]}>
+					<Input />
+				</Form.Item>
+				{/* <Form.Item
+					label='Category'
+					name='category'
+					rules={[
+						{
+							required: true,
+						},
+					]}>
+					<Select {...selectProps} />
+				</Form.Item> */}
+				<Form.Item
+					label='Descripción'
+					name='descripcion'
+					rules={[
+						{
+							required: true,
+						},
+					]}>
+					<MDEditor data-color-mode='light' />
+				</Form.Item>
+				{/* <Form.Item label='Cover'>
+					<Form.Item
+						name='cover'
+						valuePropName='fileList'
+						getValueProps={(data) => getValueProps(data, API_URL)}
+						noStyle>
+						<Upload.Dragger
+							name='files'
+							action={`${API_URL}/upload`}
+							headers={{
+								Authorization: `Bearer ${localStorage.getItem(
+									TOKEN_KEY
+								)}`,
+							}}
+							listType='picture'
+							multiple
+							{...uploadProps}>
+							<p className='ant-upload-text'>
+								Drag & drop a file in this area
+							</p>
+						</Upload.Dragger>
+					</Form.Item>
+				</Form.Item> */}
+			</Form>
+		</Create>
+	);
+};
